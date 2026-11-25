@@ -7,6 +7,10 @@
     const money = value => 'Rs. ' + Number(value).toLocaleString('en-PK', {maximumFractionDigits: 2});
     function update(rebuild) {
       const delivery = kind.value === 'delivery';
+      const manual = (data.methods[kind.value] || []).some(method => ['jazzcash', 'easypaisa'].includes(method.code));
+      document.getElementById('payment-help').textContent = manual
+        ? 'For manual transfers, you will receive your order reference and payment instructions first. The caf\u00e9 verifies each transfer.'
+        : 'Choose one of the payment methods shown above.';
       document.querySelectorAll('.delivery-field').forEach(el => {el.hidden = !delivery;});
       const fee = delivery ? data.areas[area.value] : '0';
       document.getElementById('delivery-fee').textContent = fee === undefined ? 'Calculated for your area' : money(fee);

@@ -46,6 +46,7 @@ def bag_page(request, form=None, *, status=200):
     return render(request, 'orders/bag.html', {'checkout_form': form, 'customer_quote': quote_for(request, bag),
         'delivery_fee': fee, 'checkout_total': bag['total'] + fee, 'selected_kind': kind,
         'needs_area': kind == 'delivery' and area is None,
+        'manual_transfer_available': any(method['code'] in ('jazzcash', 'easypaisa') for method in methods.get(kind, [])),
         'checkout_data': {'subtotal': str(bag['total']), 'areas': areas, 'methods': methods}}, status=status)
 
 

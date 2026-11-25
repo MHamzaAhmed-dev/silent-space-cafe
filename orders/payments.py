@@ -16,13 +16,13 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from .forms import TransactionReferenceForm, gateway_ready
+from .forms import TransactionReferenceForm, gateway_ready, manual_transfers_allowed
 from .models import DineInOrder, PaymentEvent
 
 
 @require_POST
 def transfer_reference(request, reference):
-    if getattr(settings, 'STAGING_MODE', False):
+    if not manual_transfers_allowed():
         return HttpResponseBadRequest('Live transfers are disabled in staging. Use synthetic cash orders only.')
     order = get_object_or_404(DineInOrder, reference=reference)
     form = TransactionReferenceForm(request.POST)

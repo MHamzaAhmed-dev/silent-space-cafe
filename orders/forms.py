@@ -9,12 +9,17 @@ def gateway_ready():
     return bool(settings.STRIPE_SECRET_KEY and settings.STRIPE_WEBHOOK_SECRET)
 
 
+def manual_transfers_allowed():
+    return (not getattr(settings, 'STAGING_MODE', False) or
+            getattr(settings, 'STAGING_ALLOW_MANUAL_TRANSFERS', False) is True)
+
+
 def available_methods(fulfilment):
     if fulfilment not in {'delivery', 'pickup', 'dine_in'}:
         return PaymentMethod.objects.none()
     rows = PaymentMethod.objects.filter(enabled=True, **{fulfilment: True})
     excluded = ['card'] if not gateway_ready() else []
-    if getattr(settings, 'STAGING_MODE', False):
+    if not manual_transfers_allowed():
         excluded.extend(['jazzcash', 'easypaisa'])
     if fulfilment != 'delivery':
         excluded.append('cod')

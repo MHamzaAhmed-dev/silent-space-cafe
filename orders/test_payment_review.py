@@ -11,6 +11,33 @@ from .services import transition_orders, verify_payments
 
 
 class ManualPaymentReviewTests(TestCase):
+    @override_settings(STAGING_MODE=True, STAGING_ALLOW_MANUAL_TRANSFERS=True,
+                       STRIPE_SECRET_KEY='test-only', STRIPE_WEBHOOK_SECRET='test-only')
+    def test_explicit_staging_wallet_opt_in_keeps_card_blocked(self):
+        from .models import PaymentMethod
+        from .forms import available_methods, gateway_ready
+        PaymentMethod.objects.filter(code__in=['jazzcash', 'easypaisa']).update(
+            enabled=True, delivery=True, pickup=True, receiver='TEST-RECEIVER', instructions='Test instructions')
+        PaymentMethod.objects.filter(code='card').update(enabled=True, delivery=True, pickup=True)
+        self.assertFalse(gateway_ready())
+        for kind in ('delivery', 'pickup'):
+            methods = set(available_methods(kind).values_list('code', flat=True))
+            self.assertTrue({'jazzcash', 'easypaisa'}.issubset(methods))
+            self.assertNotIn('card', methods)
+            self.assertIn('cod' if kind == 'delivery' else 'cash', methods)
+        row = self.order(payment_status='unpaid', transaction_reference='')
+        receipt = self.client.get(reverse('orders:receipt', args=[row.reference]))
+        self.assertContains(receipt, 'TEST-ACCOUNT')
+        self.assertContains(receipt, 'Payment instructions')
+        response = self.client.post(reverse('orders:transfer_reference', args=[row.reference]),
+                                    {'transaction_reference': 'SYNTHETIC-REFERENCE'})
+        self.assertEqual(response.status_code, 302)
+        row.refresh_from_db()
+        self.assertEqual(row.payment_status, 'pending')
+        self.assertIsNone(row.verified_at)
+        PaymentMethod.objects.filter(code='easypaisa').update(receiver='')
+        self.assertFalse(available_methods('delivery').filter(code='easypaisa').exists())
+
     @override_settings(STAGING_MODE=True, STRIPE_SECRET_KEY='sk_live_test_only', STRIPE_WEBHOOK_SECRET='test_only')
     def test_staging_blocks_transfers_and_gateway_even_with_credentials(self):
         from .forms import available_methods, gateway_ready

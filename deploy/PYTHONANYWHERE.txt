@@ -138,9 +138,20 @@ test product photo via Admin and request its /media/ URL. collectstatic does not
 collect uploads. Inspect Web access/error logs. Host smoke tests remain UNVERIFIED.
 
 7. STAGING PAYMENTS AND NOTIFICATIONS
-Staging forcibly clears Stripe/SMTP credentials, hides card/JazzCash/Easypaisa,
-and rejects transfer-reference POSTs even if seeded method rows are enabled.
-Only synthetic cash orders should be placed; no real payments or merchant setup.
+Wallet opt-in update: by default the restrictions below still apply. After
+reviewing the JazzCash/Easypaisa receivers and fulfilment flags in Admin, explicitly
+set "allow_manual_transfers": true (JSON boolean) in the external staging.json
+to permit configured manual wallets. Reload after release. This does not enable
+card or SMTP. Transfer submissions remain pending until authorized staff verify
+them. Existing orders retain their original receiver/instruction snapshots.
+Keep the flag absent/false for cash-only testing. Do not make real transfers
+during staging verification. Wallet visibility requires a nonempty receiver;
+receiver name is not a separate field and instructions are not an eligibility rule.
+
+Staging forcibly clears Stripe/SMTP credentials. Without the explicit wallet
+opt-in, it hides JazzCash/Easypaisa and rejects transfer-reference POSTs even if
+seeded method rows are enabled. Card remains hidden in either mode. Use synthetic
+orders only; no real payments or merchant setup are part of this rehearsal.
 Manual transfer workflows are locally tested; no merchant verification is claimed.
 
 Email ALWAYS uses file capture under silent-space-data/test-emails. To test:

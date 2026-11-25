@@ -17,6 +17,9 @@ if len(SECRET_KEY) < 50 or SECRET_KEY.startswith(('django-insecure-', 'GENERATE_
     raise ImproperlyConfigured('Provide a random staging secret of at least 50 characters.')
 DEBUG = False
 STAGING_MODE = True
+STAGING_ALLOW_MANUAL_TRANSFERS = config.get('allow_manual_transfers', False)
+if not isinstance(STAGING_ALLOW_MANUAL_TRANSFERS, bool):
+    raise ImproperlyConfigured('allow_manual_transfers must be a JSON boolean.')
 ALLOWED_HOSTS = [config['hostname']]
 CSRF_TRUSTED_ORIGINS = ['https://' + config['hostname']]
 SITE_BASE_URL = CSRF_TRUSTED_ORIGINS[0]

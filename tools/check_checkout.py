@@ -58,6 +58,8 @@ os.environ['DJANGO_SETTINGS_MODULE']='silent_space.settings'
 from django.conf import settings
 settings.DATABASES['default']['NAME']=sys.argv[1]
 settings.DEBUG=True
+settings.STAGING_MODE=True
+settings.STAGING_ALLOW_MANUAL_TRANSFERS=True
 settings.EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'
 settings.STRIPE_SECRET_KEY=''
 settings.STRIPE_WEBHOOK_SECRET=''
@@ -148,7 +150,15 @@ call_command('runserver','127.0.0.1:8007',use_reloader=False,verbosity=0)
                 orm(lambda:PaymentMethod.objects.filter(code='easypaisa').update(enabled=True,receiver='TEST-EASYPAISA'))
                 context=browser.new_context()
                 page=context.new_page();add(page,coffee)
+                page.get_by_label('Delivery area',exact=True).select_option(str(a.pk))
+                for label in ('JazzCash', 'Easypaisa', 'Cash on delivery'):
+                    expect(page.get_by_label(label,exact=True)).to_be_visible()
+                expect(page.locator('#payment-help')).to_contain_text('verifies each transfer')
+                assert page.get_by_label('Card (Visa / Mastercard)',exact=True).count()==0
                 page.get_by_label('How would you like your order?',exact=True).select_option('pickup')
+                for label in ('JazzCash', 'Easypaisa', 'Cash at pickup / cafe'):
+                    expect(page.get_by_label(label,exact=True)).to_be_visible()
+                assert page.get_by_label('Cash on delivery',exact=True).count()==0
                 page.get_by_label('Full name',exact=True).fill('Easypaisa Pickup Guest')
                 page.get_by_label('Phone number',exact=True).fill('03001234567')
                 page.get_by_label('Easypaisa',exact=True).check()

@@ -1,0 +1,103 @@
+WALLET VISIBILITY -- PYTHONANYWHERE
+
+Confirmed before this fix: live checkout's server-rendered radio buttons and
+embedded checkout-data contained COD for delivery and cash for pickup only.
+JavaScript did not remove the wallets: they were excluded by available_methods
+because settings_staging hardcoded STAGING_MODE=True. Local development used
+settings with staging off. This was deliberate cash-only staging policy.
+
+Eligibility remains: PaymentMethod.enabled=True, selected fulfilment flag True,
+receiver not empty. No separate receiver-name field exists. Instructions are
+recommended but are not a visibility requirement. Card remains blocked in staging
+even if a database card row is enabled or environment credentials are supplied.
+
+Admin: Orders > Payment methods > JazzCash / Easypaisa. Review Enabled, Delivery,
+Pickup, Dine in, Receiver and Instructions. Do not enable an unconfigured receiver.
+Existing orders retain their saved receiver/instructions and verification state.
+
+READ-ONLY HOST CHECK (prints booleans, not account numbers or credentials)
+"$HOME/.virtualenvs/silent-space/bin/python" - <<'PY'
+import sys, runpy, subprocess
+sys.dont_write_bytecode = True
+runpy.run_path('/var/www/silentspacecafe_pythonanywhere_com_wsgi.py')
+from pathlib import Path
+from django.conf import settings
+from django.db import connection
+from orders.models import PaymentMethod
+from orders.forms import available_methods, gateway_ready
+print('Settings:', settings.SETTINGS_MODULE)
+print('Commit:', subprocess.check_output(['git','-C',str(settings.BASE_DIR),'rev-parse','HEAD'],text=True).strip())
+db = Path(settings.DATABASES['default']['NAME']).resolve()
+print('Database:', db)
+print('Staging:', getattr(settings,'STAGING_MODE',False))
+print('Wallet opt-in:', getattr(settings,'STAGING_ALLOW_MANUAL_TRANSFERS',False))
+print('Card gateway ready:', gateway_ready())
+connection.close()
+connection.settings_dict['NAME'] = db.as_uri() + '?mode=ro'
+connection.settings_dict['OPTIONS'] = {**connection.settings_dict.get('OPTIONS',{}),'uri':True}
+for m in PaymentMethod.objects.all():
+    print(m.code, {'enabled':m.enabled,'delivery':m.delivery,'pickup':m.pickup,
+        'dine_in':m.dine_in,'receiver_present':bool(m.receiver.strip()),
+        'instructions_present':bool(m.instructions.strip())})
+for kind in ('delivery','pickup'):
+    print(kind, list(available_methods(kind).values_list('code',flat=True)))
+connection.close()
+PY
+
+RELEASE
+Follow PYTHONANYWHERE.txt's maintenance procedure first. Run git fetch/pull only
+in the source clone, not the detached current release. Select this fix's full
+successful main CI SHA. Use the existing deploy/release.py with that SHA; it
+backs up SQLite before migrations and runs collectstatic for the changed JS.
+
+git -C "$HOME/silent-space-source" pull --ff-only origin main
+python3.13 "$HOME/silent-space-source/deploy/release.py" \
+  --commit FULL_SUCCESSFUL_CI_SHA \
+  --repo "$HOME/silent-space-source" \
+  --root "$HOME/silent-space" \
+  --venv "$HOME/.virtualenvs/silent-space" \
+  --config "$HOME/.config/silent-space/staging.json" \
+  --maintenance-confirmed
+
+AFTER successful release, explicitly enable the wallets in the EXTERNAL config.
+This opt-in is default-off and affects manual transfers only, not card or SMTP.
+The following creates a private backup and atomically updates the JSON. It does
+not change SECRET_KEY or any database records, and prints no secret values.
+
+python3.13 - <<'PY'
+import json, os, shutil, tempfile
+from datetime import datetime, timezone
+from pathlib import Path
+path = Path.home()/'.config/silent-space/staging.json'
+config = json.loads(path.read_text())
+stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
+shutil.copy2(path, path.with_name('staging-before-wallets-'+stamp+'.json'))
+config['allow_manual_transfers'] = True
+with tempfile.NamedTemporaryFile('w', dir=path.parent, delete=False) as f:
+    json.dump(config, f, indent=2)
+    temporary = Path(f.name)
+os.chmod(temporary, 0o600)
+os.replace(temporary, path)
+print('Manual-wallet opt-in enabled; card remains disabled.')
+PY
+
+Restore the normal staging WSGI loader, then Web > silentspacecafe.pythonanywhere.com
+> Reload. Keep /static/ mapped to current/staticfiles; disable browser cache.
+Re-run the read-only host check. For configured enabled wallets, expected methods:
+delivery: jazzcash, easypaisa, cod
+pickup: jazzcash, easypaisa, cash
+No card in either list.
+
+LIVE SMOKE TEST -- NO ORDER SUBMISSION
+Add an item to a temporary bag, select Delivery + Lahore, confirm both wallets
+and COD. Switch to Pickup, confirm both wallets and cash at pickup, with zero
+delivery fee. Helper text should explain that instructions follow the saved
+order and staff verify transfers; it should not promise wallets in cash-only mode.
+Do not click Place order or submit a transaction reference. Actual receipt
+instructions were checked using isolated local orders; seeing a live receipt
+requires an existing demo order and its private link. Never share private links.
+
+ROLLBACK OF OPT-IN
+Set allow_manual_transfers to false in the external JSON and reload. Keep card
+disabled. This hides wallets and stops new reference submissions without editing
+any existing orders or approving payments. Follow the main guide for code rollback.

@@ -110,6 +110,6 @@ def submit(request):
 def receipt(request, reference):
     from django.conf import settings
     order = get_object_or_404(DineInOrder.objects.prefetch_related('lines'), reference=reference)
-    from .forms import TransactionReferenceForm
+    from .forms import TransactionReferenceForm, manual_transfers_allowed
     return render(request, 'orders/receipt.html', {'order': order, 'payment_form': TransactionReferenceForm(),
-        'staging_mode': getattr(settings, 'STAGING_MODE', False)})
+        'staging_mode': getattr(settings, 'STAGING_MODE', False) and not manual_transfers_allowed()})
