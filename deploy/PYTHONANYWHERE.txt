@@ -1,0 +1,207 @@
+SILENT SPACE CAFE -- FREE PYTHONANYWHERE STAGING
+Prepared 25 November 2026. Nothing deployed or pushed by this preparation.
+
+LOCAL VERIFICATION
+From the project directory (Windows virtualenv):
+.\venv\Scripts\python.exe manage.py check --settings=silent_space.settings_ci
+.\venv\Scripts\python.exe manage.py makemigrations --check --dry-run --settings=silent_space.settings_ci
+.\venv\Scripts\python.exe manage.py test --settings=silent_space.settings_ci
+.\venv\Scripts\python.exe -m unittest discover -s tests -v
+Local Python is 3.14; CI and PythonAnywhere target 3.13. The actual GitHub-hosted
+3.13 run is still required before release. Linux flock/symlink orchestration and
+Web-tab reload must be verified on the host; local helper tests are not a deploy.
+
+INPUTS
+PythonAnywhere username, region and exact Web-tab hostname; Python 3.13 in Bash
+and Web tab; GitHub read access to MHamzaAhmed-dev/silent-space-cafe; a unique
+staging secret. A fine-grained GitHub token needs Contents: read and Actions: read
+on this private repository. Never put tokens in remote URLs, source or shell
+history. The release script prompts secretly; Git prompts separately if needed.
+
+1. PUBLISH THE PREPARED FILES FROM WINDOWS
+cd "D:\Silent Space"
+git add .github .python-version deploy tests silent_space/settings.py silent_space/settings_ci.py silent_space/settings_staging.py orders/forms.py orders/payments.py orders/checkout.py orders/test_payment_review.py templates/orders/receipt.html README.md
+git commit -m "Prepare isolated CI and manual PythonAnywhere staging releases"
+git push origin main
+
+GitHub > Actions > Django CI: wait for the main push run to succeed. Copy its full
+40-character commit SHA. The previous 4eae1e5 commit has no CI workflow and cannot
+be released with this gate. Pull-request results are not accepted as main-push
+evidence. Ensure private-repository Actions quota is available.
+CI runs Python 3.13, isolated in-memory SQLite, temporary media, in-memory email,
+empty payment credentials, and no .env or GitHub Secrets. Failed steps stay red.
+
+2. PYTHONANYWHERE BASH CONSOLE: PRIVATE CLONE AND VIRTUALENV
+Use a current system image offering Python 3.13. Replace YOUR_USERNAME in paths
+and use the actual assigned hostname (EU account domains may differ).
+
+umask 077
+mkdir -p "$HOME/.config/silent-space" "$HOME/silent-space-data/media" "$HOME/silent-space-data/backups" "$HOME/silent-space-data/test-emails"
+git clone https://github.com/MHamzaAhmed-dev/silent-space-cafe.git "$HOME/silent-space-source"
+python3.13 -m venv "$HOME/.virtualenvs/silent-space"
+
+At Git authentication prompts enter your GitHub username and read-only token as
+password. Use HTTPS, not SSH, on a free account. The free outbound allowlist must
+allow GitHub API and package downloads; if CI verification is blocked, stop and
+resolve host access rather than bypassing the gate. Do not embed tokens in URLs.
+
+3. CREATE EXTERNAL CONFIG (not a .env in Git)
+python3.13 - <<'PY'
+import json, os, secrets
+from pathlib import Path
+home = Path.home()
+hostname = input('Exact PythonAnywhere Web tab hostname: ').strip()
+path = home / '.config/silent-space/staging.json'
+with path.open('x') as f:
+    json.dump({'hostname': hostname, 'secret_key': secrets.token_urlsafe(64),
+               'data_dir': str(home / 'silent-space-data')}, f, indent=2)
+os.chmod(path, 0o600)
+print('Created', path)
+PY
+
+Keep this secret/config unchanged across releases. The example JSON is a schema
+only and its placeholder secret is rejected. Back it up privately. The database,
+uploads and email captures stay in silent-space-data, outside all Git worktrees.
+Never copy the customer database or real receiving-account details into staging.
+
+4. SELECT AND PREPARE A GREEN COMMIT
+First deployment has no serving app. On subsequent releases put the app into
+maintenance BEFORE confirming the flag (instructions below). Stop any manually
+running notification command too. Check free disk quota for dependencies/backups.
+
+export STAGING_CONFIG="$HOME/.config/silent-space/staging.json"
+export DJANGO_SETTINGS_MODULE=silent_space.settings_staging
+read -r -p 'Full successful main CI SHA: ' RELEASE_SHA
+python3.13 "$HOME/silent-space-source/deploy/release.py" \
+  --commit "$RELEASE_SHA" \
+  --repo "$HOME/silent-space-source" \
+  --root "$HOME/silent-space" \
+  --venv "$HOME/.virtualenvs/silent-space" \
+  --config "$STAGING_CONFIG" \
+  --maintenance-confirmed
+
+The script verifies the latest matching GitHub CI main-push run, fetches main,
+checks the SHA belongs to main, creates a detached releases/SHA worktree, backs
+up SQLite using its backup API and integrity check, installs dependencies into
+the configured venv, checks migration drift, migrates and collects static.
+Only after success does current switch atomically to the new release. It never
+reloads the Web app. Inspect the printed backup/previous-release information.
+Invalid SHA, failed/pending/missing CI, dirty clone, occupied release lock or an
+existing target worktree stop the release. Inspect failed worktrees rather than
+overwriting them or rerunning migrations blindly. Keep maintenance active on error.
+
+5. FIRST-DEPLOY SYNTHETIC DATA AND ADMIN USER
+cd "$HOME/silent-space/current"
+"$HOME/.virtualenvs/silent-space/bin/python" manage.py createsuperuser
+"$HOME/.virtualenvs/silent-space/bin/python" manage.py seed_menu
+"$HOME/.virtualenvs/silent-space/bin/python" manage.py shell
+
+In the Django shell (staging fixtures, not confirmed cafe operating hours):
+from orders.models import DeliveryArea
+DeliveryArea.objects.get_or_create(name='Lahore', defaults={'fee': 0, 'enabled': True})
+from bookings.models import BookingHours, ZoneCapacity
+from datetime import time
+for day in range(7):
+    BookingHours.objects.get_or_create(weekday=day, defaults={'opens': time(10), 'closes': time(18)})
+
+for zone, seats in [('quiet', 6), ('reading', 4), ('solo', 1)]:
+    ZoneCapacity.objects.get_or_create(zone=zone, defaults={'seats': seats})
+
+Exit the shell. Do not import real customers, orders or uploaded customer media.
+
+6. WEB TAB, WSGI AND RELOAD
+Add Web app > Manual configuration > Python 3.13, matching the virtualenv.
+Virtualenv: /home/YOUR_USERNAME/.virtualenvs/silent-space
+Source code and working directory: /home/YOUR_USERNAME/silent-space/current
+Open the WSGI file linked in the Web tab (not silent_space/wsgi.py in Git).
+Replace it with deploy/pythonanywhere_wsgi.py, substituting YOUR_USERNAME.
+This selects settings_staging and the external JSON config explicitly.
+
+Static mappings:
+/static/ -> /home/YOUR_USERNAME/silent-space/current/staticfiles
+/media/  -> /home/YOUR_USERNAME/silent-space-data/media
+
+Enable Force HTTPS, click Reload for the assigned hostname. Staging forces
+DEBUG=False, exact allowed host/trusted origin, HTTPS redirect and secure cookies.
+It uses the HTTPS scheme passed by PythonAnywhere, not untrusted proxy headers.
+If redirects loop, inspect the host WSGI scheme/error logs before changing these
+protections. HSTS remains off until HTTPS on this host has been verified.
+
+After reload, directly open https://YOUR_HOSTNAME/static/css/base.css. Disable
+browser cache and require HTTP 200, Content-Type text/css, and actual CSS body.
+Also check /static/js/base.js and /static/admin/css/base.css. An HTML error/login
+response is a failure: fix the mapping/collectstatic, do not add another stylesheet.
+Check /, /menu/, /spaces/, /book-a-table/, /orders/bag/ on mobile and desktop;
+test mobile Menu/Escape, bag totals, synthetic cash orders, reservation availability,
+Admin approval/cancellation and original private-link status refreshes. Upload a
+test product photo via Admin and request its /media/ URL. collectstatic does not
+collect uploads. Inspect Web access/error logs. Host smoke tests remain UNVERIFIED.
+
+7. STAGING PAYMENTS AND NOTIFICATIONS
+Staging forcibly clears Stripe/SMTP credentials, hides card/JazzCash/Easypaisa,
+and rejects transfer-reference POSTs even if seeded method rows are enabled.
+Only synthetic cash orders should be placed; no real payments or merchant setup.
+Manual transfer workflows are locally tested; no merchant verification is claimed.
+
+Email ALWAYS uses file capture under silent-space-data/test-emails. To test:
+export STAGING_CONFIG="$HOME/.config/silent-space/staging.json"
+export DJANGO_SETTINGS_MODULE=silent_space.settings_staging
+cd "$HOME/silent-space/current"
+"$HOME/.virtualenvs/silent-space/bin/python" manage.py process_notifications --limit 100
+ls "$HOME/silent-space-data/test-emails"
+
+Inspect files for one synthetic new-order email; repeat the command to check
+deduplication. For reminders, use staging records only: wait past the 10-minute
+unattended Received-order threshold or approve a booking within the next 60 minutes,
+then run the command. Acted-on/cancelled records must skip obsolete reminders.
+
+New free accounts have NO scheduled tasks; the older-account daily-task exception
+does not apply. No scheduler is installed here. Automated reminders and live email
+remain UNVERIFIED until host testing. Do not treat an open Bash console as a worker.
+A future external SMTP test requires an authorized test-only inbox, an allowed
+provider and a separately reviewed settings change. No live SMTP is enabled here.
+
+8. MAINTENANCE, ERRORS AND ROLLBACK
+Before later releases, save the working Web-tab WSGI text privately. Temporarily
+replace it with the following and click Reload; verify HTTP 503 before releasing:
+
+def application(environ, start_response):
+    start_response('503 Service Unavailable', [('Content-Type', 'text/plain'), ('Retry-After', '300')])
+    return [b'Staging maintenance; please retry shortly.']
+
+After a successful release restore the staging WSGI loader, Reload and smoke-test.
+If a release fails, keep maintenance active. Although current changes only after
+success, migrations and virtualenv packages may already have changed. No automatic
+database rollback is safe. The external release-<timestamp>.json manifest records
+the previous release and pre-migration backup; the script also prints them.
+
+For code rollback, choose a retained prior release, reinstall its requirements
+into the same venv, verify compatibility with the CURRENT schema, and switch the
+current symlink atomically. Example, after reviewing the chosen path:
+
+export PREVIOUS_RELEASE=/home/YOUR_USERNAME/silent-space/releases/PREVIOUS_FULL_SHA
+"$HOME/.virtualenvs/silent-space/bin/python" -m pip install -r "$PREVIOUS_RELEASE/requirements.txt"
+python3.13 - <<'PY'
+import os
+from pathlib import Path
+root = Path.home() / 'silent-space'
+previous = Path(os.environ['PREVIOUS_RELEASE']).resolve()
+assert previous.is_relative_to((root / 'releases').resolve()) and (previous / 'manage.py').is_file()
+pending = root / 'rollback.next'
+pending.symlink_to(previous, target_is_directory=True)
+os.replace(pending, root / 'current')
+PY
+
+If schema compatibility fails, use reviewed reverse migrations or restore the
+matching pre-release SQLite backup only after accepting loss of newer staging
+writes. Back up the current DB first, stop all writers and restore via SQLite's
+backup API (do not copy over an active WAL database). Media/secrets are external:
+never remove them during rollback, and retain independent media/config backups.
+Restore WSGI, Reload, and recheck private links/static/media. Do not overwrite an
+existing worktree with the release command as a rollback shortcut.
+
+REFERENCES (official, checked 25 November 2026)
+https://help.pythonanywhere.com/pages/PythonVersions
+https://help.pythonanywhere.com/pages/DeployExistingDjangoProject/
+https://help.pythonanywhere.com/pages/ExternalVCS/
+https://help.pythonanywhere.com/pages/ScheduledTasks/

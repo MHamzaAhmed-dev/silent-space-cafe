@@ -7,7 +7,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables from .env
-load_dotenv()
+if os.getenv('SILENT_SPACE_SKIP_DOTENV') != '1':
+    load_dotenv()
 
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent

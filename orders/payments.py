@@ -22,6 +22,8 @@ from .models import DineInOrder, PaymentEvent
 
 @require_POST
 def transfer_reference(request, reference):
+    if getattr(settings, 'STAGING_MODE', False):
+        return HttpResponseBadRequest('Live transfers are disabled in staging. Use synthetic cash orders only.')
     order = get_object_or_404(DineInOrder, reference=reference)
     form = TransactionReferenceForm(request.POST)
     if not form.is_valid():

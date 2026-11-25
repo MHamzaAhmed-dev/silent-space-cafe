@@ -20,7 +20,8 @@
   {% elif order.payment_status == 'paid' %}<p>Approved: Payment approved.</p>
   {% elif order.payment_status == 'rejected' %}<p>Rejected: We couldn’t verify your payment. Please check your transfer details or contact the café.</p>
   {% else %}<p>{{ order.get_payment_status_display }}</p>{% endif %}</section>
-  {% if order.payment_method == 'jazzcash' or order.payment_method == 'easypaisa' %}
+  {% if staging_mode %}<p>Staging test order only. Do not send payments.</p>
+  {% elif order.payment_method == 'jazzcash' or order.payment_method == 'easypaisa' %}
   <section class="payment-box"><h2>Payment instructions</h2><p>Your order is saved. Transfer exactly <strong>PKR {{ order.total|floatformat:2 }}</strong> to {{ order.get_payment_method_display }}:</p><p><strong>{{ order.payment_receiver }}</strong></p><button class="button" type="button" data-copy-receiver="{{ order.payment_receiver }}">Copy receiver number</button><p>{{ order.payment_instructions|linebreaksbr }}</p>
   {% if order.payment_status == 'unpaid' %}<form method="post" action="{% url 'orders:transfer_reference' order.reference %}">{% csrf_token %}{{ payment_form.as_p }}<button class="button">Submit transaction reference</button></form><p>Payment stays pending until verified by the caf&eacute;.</p>{% else %}<p>Transaction reference: {{ order.transaction_reference }}</p><p>{{ order.get_payment_status_display }}. Contact the caf&eacute; with your order reference if a correction is needed.</p>{% endif %}</section>
   {% elif order.payment_method == 'card' and order.payment_status != 'paid' %}<section class="payment-box"><h2>Secure card payment</h2><p>Enter card details only on the payment provider's hosted page. Returning here does not confirm payment.</p><form method="post" action="{% url 'orders:hosted_checkout' order.reference %}">{% csrf_token %}<button class="button">Continue to secure card checkout</button></form></section>{% endif %}

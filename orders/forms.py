@@ -4,6 +4,8 @@ from .models import DeliveryArea, PaymentMethod
 
 
 def gateway_ready():
+    if getattr(settings, 'STAGING_MODE', False):
+        return False
     return bool(settings.STRIPE_SECRET_KEY and settings.STRIPE_WEBHOOK_SECRET)
 
 
@@ -12,6 +14,8 @@ def available_methods(fulfilment):
         return PaymentMethod.objects.none()
     rows = PaymentMethod.objects.filter(enabled=True, **{fulfilment: True})
     excluded = ['card'] if not gateway_ready() else []
+    if getattr(settings, 'STAGING_MODE', False):
+        excluded.extend(['jazzcash', 'easypaisa'])
     if fulfilment != 'delivery':
         excluded.append('cod')
     if fulfilment == 'delivery':

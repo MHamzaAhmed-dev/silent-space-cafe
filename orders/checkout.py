@@ -108,6 +108,8 @@ def submit(request):
 @never_cache
 @require_safe
 def receipt(request, reference):
+    from django.conf import settings
     order = get_object_or_404(DineInOrder.objects.prefetch_related('lines'), reference=reference)
     from .forms import TransactionReferenceForm
-    return render(request, 'orders/receipt.html', {'order': order, 'payment_form': TransactionReferenceForm()})
+    return render(request, 'orders/receipt.html', {'order': order, 'payment_form': TransactionReferenceForm(),
+        'staging_mode': getattr(settings, 'STAGING_MODE', False)})

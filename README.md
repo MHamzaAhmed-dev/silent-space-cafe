@@ -1,5 +1,7 @@
 # Silent Space Cafe
 
+PythonAnywhere staging and manual CI-gated releases: see [deploy/PYTHONANYWHERE.txt](deploy/PYTHONANYWHERE.txt). Preparation only; host deployment remains manual.
+
 **Standing design rule:** all customer-facing pages use the homepage's shared ivory header and espresso footer, including identical typography, spacing, navigation, bag control and reservation button. Page mockups do not override this rule. Header/footer changes belong in the shared layout/styles and must apply everywhere. This rule is recorded in `AGENTS.md` and the local design skill. Earlier references below to page-specific espresso headers describe superseded design iterations.
 
 Django 5.2, SQLite, Django templates, local CSS and vanilla JavaScript. Timezone: Asia/Karachi. Prices: PKR.

@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from notifications.models import Notification
@@ -11,6 +11,18 @@ from .services import transition_orders, verify_payments
 
 
 class ManualPaymentReviewTests(TestCase):
+    @override_settings(STAGING_MODE=True, STRIPE_SECRET_KEY='sk_live_test_only', STRIPE_WEBHOOK_SECRET='test_only')
+    def test_staging_blocks_transfers_and_gateway_even_with_credentials(self):
+        from .forms import available_methods, gateway_ready
+        self.assertFalse(gateway_ready())
+        for fulfilment in ('delivery', 'pickup', 'dine_in'):
+            self.assertFalse(available_methods(fulfilment).filter(code__in=['card', 'jazzcash', 'easypaisa']).exists())
+        row = self.order()
+        receipt = self.client.get(reverse('orders:receipt', args=[row.reference]))
+        self.assertContains(receipt, 'Staging test order only. Do not send payments.')
+        self.assertNotContains(receipt, 'TEST-ACCOUNT')
+        response = self.client.post(reverse('orders:transfer_reference', args=[row.reference]), {'transaction_reference': 'do-not-accept'})
+        self.assertEqual(response.status_code, 400)
     @classmethod
     def setUpTestData(cls):
         cls.staff = get_user_model().objects.create_user('payment-reviewer', is_staff=True)
