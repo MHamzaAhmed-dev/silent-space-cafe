@@ -1,0 +1,4 @@
+Django>=5.2,<5.3
+python-dotenv>=1.0,<2
+qrcode>=8,<9
+Pillow>=13,<14

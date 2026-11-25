@@ -1,0 +1,149 @@
+Silent Space Cafe - local launch rehearsal - 25 November 2026
+
+RESULTS
+Pass: Reservation availability, submission, Admin detail approval, original guest
+link refresh, dashboard cancellation and capacity release; private notes absent.
+The final standalone Admin browser run passed after correcting its label selector.
+Pass: Delivery/JazzCash: subtotal PKR 2,600 + area fee PKR 250 = PKR 2,850;
+payment approved in staff UI; original receipt shows payment approval and on-way
+message after dispatch. Two service-area fee choices (100/250) were exercised.
+Pass: Easypaisa pickup: no delivery fee; approved in staff UI; original receipt
+shows payment approval, preparing, then ready for pickup. Synthetic receiver only.
+Pass: QR dine-in URL, table/reference matching, queue visibility, disabled QR
+protection and legacy order history. Physical camera scanning: Blocked/unperformed.
+Pass: Local new-order SMTP capture and reminder logic; 10-minute unattended order
+and 60-minute approved reservation thresholds, skip-after-action, deduplication,
+SMTP 451 outage/exhaustion/recovery and overlapping-worker protection.
+Pass: Full 83-test suite; seven focused permission/state/privacy tests rerun after
+settings edits; migration drift check and applied-migration check; standard checks.
+Pass: DEBUG=False WSGI rehearsal after collectstatic: all five customer pages,
+including populated bag checkout, at 390/768/1440px; CSS/JS/product assets return
+200 with appropriate non-HTML MIME types; uploaded PNG returns image/png.
+Pass: Rehearsal fingerprints confirm live business records unchanged.
+
+Blocked: Public launch configuration. Local check --deploy reports W004, W008,
+W009, W012, W016, W018 (HSTS, redirect, secret, cookies, DEBUG). Synthetic HTTPS
+environment check leaves only optional W005/W021 (HSTS subdomains/preload).
+Blocked: External SMTP/inbox/spam delivery, deployed scheduler/service account,
+real host TLS/proxy/static/media configuration, merchant sandbox/card credentials,
+physical phone scan, and confirmation of real manual-payment receiving accounts.
+Live Easypaisa and card remain disabled; no real payments or external mail sent.
+Live delivery remains Lahore only, fee PKR 0, unchanged by synthetic fee tests.
+
+FIXES AND FILES
+silent_space/settings.py and .env.example: expose HTTPS deployment settings via
+environment variables without enabling HTTPS-only cookies on local HTTP.
+tools/check_launch_production.py: new isolated production-style asset rehearsal.
+tools/check_reservations.py: exercise Admin detail approval, fail early if its
+test port is occupied. An overlapping rehearsal result was discarded and rerun.
+tools/check_acceptance.py: allow slower local worker startup (60-second test
+deadline) and clean up child workers on failure; initial timeout was rerun.
+artifacts/launch-handoff.txt and launch JSON reports: evidence and host instructions.
+No customer template/design or production business records changed in this phase.
+
+Scope: local verification only. No deployment, DNS changes, customer emails,
+real payments, or merchant credentials were used. Business workflows used
+temporary databases. The production probe's static/media adapter simulates a
+host's file server; it is not a production server to deploy.
+
+LOCAL START (PowerShell)
+cd "D:\Silent Space"
+$env:DJANGO_DEBUG = "True"
+.\venv\Scripts\python.exe manage.py migrate
+.\venv\Scripts\python.exe manage.py runserver
+Open http://127.0.0.1:8000/ ; staff at /staff/ ; Admin at /admin/.
+Keep this terminal open; Ctrl+C stops it. An existing listener must be stopped
+before starting another server on the same port. Do not overwrite the existing .env.
+
+REPEAT LOCAL VERIFICATION
+.\venv\Scripts\python.exe manage.py check
+.\venv\Scripts\python.exe manage.py test
+.\venv\Scripts\python.exe manage.py makemigrations --check --dry-run
+.\venv\Scripts\python.exe manage.py migrate --check
+.\venv\Scripts\python.exe tools/check_checkout.py
+.\venv\Scripts\python.exe tools/check_reservations.py
+.\venv\Scripts\python.exe tools/check_acceptance.py
+.\venv\Scripts\python.exe tools/check_launch_production.py
+Browser runners require installed Playwright and Chrome. Run browser runners
+sequentially on this machine to reduce contention. Each uses private test data.
+check_acceptance uses only the explicit loopback test inbox acceptance@silent-space.test.
+
+STAFF CLICKS
+Payment: Staff > Orders > order > compare amount/reference against receiving
+account > Change payment status > Approve payment or Reject payment > Save.
+Then Start preparing > Mark out for delivery / Mark ready for pickup.
+Admin: Orders > Dine in orders > order > Change payment status > decision > Save.
+Admin fulfilment actions are on the order list's Action dropdown.
+Reservation: Admin > Bookings > Reservation requests > request > Change status
+> Approve > Save. Cancel using the existing Admin bulk cancellation action or
+Staff > Reservations > reservation > Cancel reservation.
+
+HOST CONFIGURATION REQUIRED BEFORE LAUNCH
+Database: current settings actively use BASE_DIR/db.sqlite3. Persist and back up
+that file, and test restoration. For PostgreSQL, install the driver and configure
+the DATABASES setting before migration; the commented example is not active and
+DB_* environment variables alone do not switch the current database backend.
+Preserve customer rows, UUID references, and media paths when migrating.
+
+Environment: DJANGO_DEBUG=False; long random SECRET_KEY; ALLOWED_HOSTS set to
+the exact hostnames; SITE_BASE_URL=https://the-real-host; CSRF_TRUSTED_ORIGINS
+set to the exact HTTPS origin(s). Supply secrets outside source control. The
+local .env/SECRET_KEY was deliberately not changed.
+
+HTTPS: provision a certificate and redirect HTTP. Set SECURE_SSL_REDIRECT=True,
+SESSION_COOKIE_SECURE=True, CSRF_COOKIE_SECURE=True. Set SECURE_HSTS_SECONDS
+after verifying HTTPS (start with a short value such as 3600). HSTS subdomains
+and preload require a deliberate domain-wide decision, not automatic enabling.
+Behind a TLS-terminating trusted proxy, configure SECURE_PROXY_SSL_HEADER in
+host settings only if the proxy strips/replaces untrusted incoming headers;
+otherwise Django may see HTTP and redirect repeatedly. Verify this on the host.
+
+Application/static: provide a production WSGI/ASGI server and host configuration;
+do not use runserver or the rehearsal server for deployment. Current static
+settings are /static/ -> BASE_DIR/staticfiles, sources BASE_DIR/static.
+Run python manage.py collectstatic --noinput on the release, then serve that
+directory through the host web server with correct MIME types.
+
+Uploads: /media/ -> MEDIA_ROOT (default BASE_DIR/media); provide persistent,
+writable storage, backups and an independent web-server/CDN route. Disable
+script execution, serve correct image MIME types, and allow image uploads within
+the app's size limit. collectstatic does not collect uploaded product images.
+
+Email: provide EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend,
+EMAIL_HOST/PORT, EMAIL_HOST_USER/PASSWORD, EMAIL_USE_TLS or EMAIL_USE_SSL as
+required, DEFAULT_FROM_EMAIL, and STAFF_NOTIFICATION_RECIPIENTS. First verify
+with an explicitly authorized test inbox as the ONLY recipient. External SMTP
+delivery/spam placement and domain sender configuration are not verified here.
+
+Schedule: run the following every minute from the project directory, using the
+production virtualenv and a service account with database/log access:
+python manage.py process_notifications --limit 100
+Use cron/systemd/Task Scheduler supplied by the host; capture failures in logs,
+monitor the failed-notification queue, and verify execution while logged out.
+Defaults: unattended Received orders after 10 minutes; approved reservations
+within 60 minutes. Command execution and reminder logic are tested locally;
+host scheduling, service-account permissions and unattended operation are not.
+
+Payments: JazzCash manual verification is locally tested. The live method is
+enabled; the cafe must confirm ownership/correctness of the receiving account.
+Easypaisa manual verification is tested with a synthetic receiver only; the live
+method remains disabled until a real receiving account is configured in Admin.
+Cash delivery/pickup and QR dine-in regressions are locally tested. Card checkout
+remains disabled: no sandbox credentials supplied. Configure merchant-supported
+credentials/webhook and verify sandbox payment, callback authenticity and amounts
+before enabling. No real-money transfer was attempted.
+
+DEPLOYMENT PRECHECKS (after the host environment is configured)
+python manage.py migrate --check
+python manage.py collectstatic --noinput
+python manage.py check --deploy
+Apply reviewed pending migrations with python manage.py migrate after a verified
+backup. Check uploaded images, private links, email and scheduling on the host.
+
+EVIDENCE
+artifacts/checkout-acceptance.json
+artifacts/reservation-checks.json
+artifacts/acceptance-results.json
+artifacts/launch-production.json
+artifacts/launch-hardened-check.json
+The chat handoff records this run's actual outcomes and remaining blockers.

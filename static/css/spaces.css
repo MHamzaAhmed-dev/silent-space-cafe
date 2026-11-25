@@ -1,0 +1,35 @@
+/* Spaces content only. Header/footer remain the homepage's shared components. */
+.spaces-page{background:var(--cream)}
+.spaces-hero{display:grid;grid-template-columns:42% 58%;max-width:1600px;margin-inline:auto;min-height:360px}
+.spaces-hero-copy{align-self:center;padding:50px 42px 50px max(44px,calc((100vw - 1320px)/2))}
+.spaces-hero h1{font:400 clamp(44px,4.5vw,67px)/1.1 Georgia,serif;letter-spacing:-2px;margin:0 0 24px}
+.space-rule{display:block;width:min(100%,230px);height:1px;background:var(--brass);margin:20px 0}
+.spaces-hero-copy p{font-size:22px;line-height:1.55;max-width:470px}
+.spaces-hero-photo{min-width:0;height:clamp(360px,30vw,470px);margin:0}
+.spaces-hero-photo img{display:block;width:100%;height:100%;object-fit:cover;object-position:60% 56%}
+.spaces-collection{max-width:1600px;margin-inline:auto}
+.space-row{display:grid;grid-template-columns:55% 45%;align-items:stretch;scroll-margin-top:110px}
+.space-row-photo{min-width:0;margin:0;grid-column:1;grid-row:1}
+.space-row-photo img{display:block;width:100%;height:100%;min-height:340px;aspect-ratio:1.9;object-fit:cover;object-position:center 60%}
+.space-row-copy{padding:48px clamp(30px,5vw,78px);align-self:center;grid-column:2;grid-row:1}
+.space-row h2{font:400 clamp(38px,4vw,61px)/1.1 Georgia,serif;letter-spacing:-1.8px}
+.space-row-copy .space-rule{width:min(100%,300px);margin-block:24px}
+.space-row-copy p{font-size:22px;line-height:1.5;max-width:470px}
+.reserve-space{display:inline-flex;align-items:center;min-height:48px;margin-top:24px;font-size:20px;font-weight:600;color:var(--olive);text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:1px}
+.reserve-space:hover{color:#2e3a20}
+.space-row-reverse{grid-template-columns:45% 55%}
+.space-row-reverse .space-row-photo{grid-column:2}
+.space-row-reverse .space-row-copy{grid-column:1;padding-left:max(44px,calc((100vw - 1320px)/2))}
+.spaces-etiquette{display:grid;grid-template-columns:45% 55%;align-items:center;gap:0;padding:43px 0 30px}
+.spaces-etiquette h2{font-size:43px;letter-spacing:-1.3px;padding-right:35px}
+.spaces-etiquette>div{border-left:1px solid var(--brass);padding:8px 0 8px 45px}
+.spaces-etiquette p{font-size:20px;line-height:1.55}
+.spaces-etiquette p+p{margin-top:10px}
+.spaces-photo-note{font-size:12px;color:var(--muted);padding-bottom:23px}
+.spaces-reservation{text-align:center;padding:43px 0 45px}
+.spaces-reservation h2{font-size:clamp(40px,4.8vw,66px);margin-bottom:22px}
+.spaces-reservation .button{min-width:230px;font-size:21px}
+@media(min-width:1600px){.spaces-hero-copy{padding-left:70px}.space-row-reverse .space-row-copy{padding-left:70px}}
+@media(max-width:1100px){.spaces-hero-copy{padding:40px 30px}.spaces-hero-copy p,.space-row-copy p{font-size:20px}.space-row-copy{padding:35px 38px}.space-row-reverse .space-row-copy{padding-left:38px}.space-row h2{font-size:44px}.spaces-etiquette h2{font-size:37px}.spaces-etiquette>div{padding-left:30px}.spaces-etiquette p{font-size:18px}}
+@media(max-width:800px){.spaces-hero{grid-template-columns:1fr}.spaces-hero-copy{padding:38px 28px}.spaces-hero h1{font-size:54px}.spaces-hero-photo{height:350px}.space-row,.space-row-reverse{grid-template-columns:1fr 1fr}.space-row-copy{padding:28px}.space-row-reverse .space-row-copy{padding-left:28px}.space-row h2{font-size:36px}.space-row-copy p{font-size:18px}.space-row-photo img{min-height:345px}.reserve-space{font-size:17px;margin-top:17px}.spaces-etiquette h2{font-size:34px}.spaces-etiquette>div{padding-left:24px}.spaces-etiquette p{font-size:17px}}
+@media(max-width:640px){.spaces-hero-copy{padding:38px 20px}.spaces-hero h1{font-size:48px;letter-spacing:-1.7px}.spaces-hero-copy p{font-size:20px}.spaces-hero-photo{height:285px}.space-row,.space-row-reverse{grid-template-columns:1fr}.space-row .space-row-photo{grid-column:1;grid-row:1}.space-row .space-row-copy{grid-column:1;grid-row:2;padding:30px 22px 34px}.space-row-photo img{min-height:0;height:auto;aspect-ratio:1.25;object-position:center 60%}.space-row h2{font-size:40px}.space-row-copy .space-rule{margin-block:20px;width:200px}.space-row-copy p{font-size:20px}.reserve-space{font-size:18px;margin-top:20px}.spaces-etiquette{display:block;padding:32px 0 20px}.spaces-etiquette h2{font-size:36px;margin-bottom:21px;padding:0}.spaces-etiquette>div{padding:0;border:0}.spaces-etiquette p{font-size:17px}.spaces-photo-note{padding-bottom:23px}.spaces-reservation{padding-block:35px}.spaces-reservation h2{font-size:42px}.spaces-reservation .button{min-width:210px;font-size:20px}}

@@ -1,0 +1,17 @@
+{
+  "passed": [
+    "Legacy nonempty order, receipt reference and line prices preserved through migrations",
+    "390px: matching shared shell, images, no overflow, fee changes, keyboard, delivery/JazzCash/staff verification",
+    "768px: matching shared shell, images, no overflow, fee changes, keyboard, delivery/JazzCash/staff verification",
+    "1440px: matching shared shell, images, no overflow, fee changes, keyboard, delivery/JazzCash/staff verification",
+    "Easypaisa pickup: original guest link, staff approval, preparing and ready for pickup",
+    "No-JavaScript refresh and cash pickup",
+    "QR dine-in table context and order receipt retained"
+  ],
+  "unverified": [
+    "Live SMTP",
+    "Merchant sandbox payments",
+    "Physical phone scanning"
+  ],
+  "real_database_unchanged": true
+}

@@ -1,0 +1,49 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Silent Space Cafe. A calm little corner for slow moments, good coffee, reading, studying and enjoying your own space.">
+  <title>{% block title %}Silent Space Cafe &middot; Find your quiet{% endblock %}</title>
+  <link rel="icon" href="{% static 'images/favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/editorial.css' %}">
+  <link rel="stylesheet" href="{% static 'css/reservations.css' %}">
+  <link rel="stylesheet" href="{% static 'css/spaces.css' %}">
+  <link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+  <script src="{% static 'js/checkout.js' %}" defer></script>
+  <script src="{% static 'js/base.js' %}" defer></script>
+  <script src="{% static 'js/reservations.js' %}" defer></script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  
+  <header class="site-header">
+    <nav class="container navigation" aria-label="Main navigation">
+      <a class="brand" href="{% url 'core:home' %}" aria-label="Silent Space Cafe home">{% include 'core/brand.html' %}</a>
+      <button class="nav-toggle" hidden aria-expanded="false" aria-controls="nav-links">Menu <span aria-hidden="true">&#9776;</span></button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="{% url 'core:home' %}" {% if page == 'home' %}aria-current="page"{% endif %}>Home</a></li>
+        <li><a href="{% url 'core:zones' %}" {% if page == 'zones' %}aria-current="page"{% endif %}>Spaces</a></li>
+        <li><a href="{% url 'core:story' %}" {% if page == 'story' %}aria-current="page"{% endif %}>Our Story</a></li>
+        <li><a href="{% url 'core:menu' %}" {% if page == 'menu' %}aria-current="page"{% endif %}>Menu</a></li>
+        <li><a href="{% url 'core:booking' %}" {% if page == 'booking' %}aria-current="page"{% endif %}>Reservations</a></li>
+        <li><a class="bag" href="{% url 'orders:bag' %}">Bag ({{ bag.count }}) <svg aria-hidden="true" width="19" height="22" viewBox="0 0 24 28" fill="none"><path d="M4 8h16l2 18H2L4 8Z M8 10V6a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="1.4"/></svg></a></li>
+        <li><a class="nav-reserve" href="{% url 'core:booking' %}">Reserve a seat</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main id="main-content" tabindex="-1">{% if messages %}<div class="container bag-messages" role="status">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</div>{% endif %}{% block content %}{% endblock %}</main>
+  <footer class="site-footer"><div class="container">
+    <div class="footer-signature"><span></span><a href="{% url 'core:home' %}">Silent Space Caf&eacute;</a><span></span></div>
+    <div class="footer-grid">
+      <div class="footer-brand"><a class="brand" href="{% url 'core:home' %}" aria-label="Silent Space Cafe home">{% include 'core/brand.html' %}</a><p>Find your peace, one sip at a time.</p><p>A little space to slow down, settle in and enjoy your own company.</p></div>
+      <div><h2>Explore</h2><ul><li><a href="{% url 'core:home' %}">Home</a></li><li><a href="{% url 'core:story' %}">Our Story</a></li><li><a href="{% url 'core:menu' %}">Our Menu</a></li><li><a href="{% url 'core:zones' %}">Quiet Zones</a></li></ul></div>
+      <div><h2>Your quiet moment</h2><ul><li><a href="{% url 'core:booking' %}">Book a Table</a></li><li><a href="{% url 'orders:bag' %}">View your Bag ({{ bag.count }})</a></li></ul><p>Reservations are reviewed after submission.</p></div>
+      <div><h2>A little consideration</h2><p>Keep conversations soft.<br>Set your phone to silent.<br>Make room for a moment of calm.</p><a class="footer-link" href="{% url 'core:zones' %}">Find your kind of quiet &rarr;</a></div>
+    </div>
+    <div class="footer-bottom"><p>&copy; {% now "Y" %} Silent Space Cafe</p><p>Keep it calm. Respect the quiet. Enjoy your moment.</p><span>Prices in PKR</span></div>
+  </div></footer>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{% load static humanize cafe_images %}
+<section class="menu-section" id="menu" aria-labelledby="menu-title">
+  <div class="container">
+    <div class="section-heading">
+      <span class="brass-rule" aria-hidden="true"></span>
+      <div class="heading-row"><h2 id="menu-title">{% if preview %}Made for slow sips{% else %}Coffee and something to eat.{% endif %}</h2>{% if preview %}<a class="editorial-link" href="{% url 'core:menu' %}">View full menu</a>{% endif %}</div>
+      <p>{% if preview %}A few favourites for your next quiet moment.{% else %}Explore comforting drinks and delicious bites.{% endif %}</p>
+    </div>
+    {% if service_location %}<p class="service-notice">Dine-in at <strong>{{ service_location.label }}</strong> &middot; Your order will be sent to this location.</p>{% endif %}
+    <div class="menu-grid">
+      {% for item in catalogue %}
+      <article class="menu-card">
+        {% if preview %}<img class="menu-photo" src="{{ item|menu_photo }}" width="800" height="800" loading="lazy" alt="{{ item|menu_photo_alt }}">{% endif %}
+        <div class="menu-copy">
+          <div class="menu-name-price"><h3>{{ item.name }}</h3><span class="menu-price">Rs. {{ item.price|floatformat:"-2"|intcomma }}</span></div>
+          <p>{{ item.description }}</p>
+          <div class="card-bottom"><span>Available to order</span><form method="post" action="{% url 'orders:bag_change' item.pk 'add' %}">{% csrf_token %}<button type="submit" aria-label="Add {{ item.name }} to bag"><span aria-hidden="true">+</span></button></form></div>
+        </div>
+      </article>
+      {% empty %}<p class="menu-empty">No menu items are available right now. Please check back soon.</p>{% endfor %}
+    </div>
+    <p class="availability" id="ordering-note">All prices in PKR. <a href="{% url 'core:menu' %}">View the full menu</a> &middot; <a href="{% url 'orders:bag' %}">Open your bag</a></p>
+  </div>
+</section>

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Reservation status | Silent Space{% endblock %}
+{% block content %}
+<section class="bag-page container">
+  <h1>Reservation status</h1>
+  <p>Reference: <strong class="workflow-reference">{{ reservation.reference }}</strong></p>
+  <p>{{ reservation.date }} at {{ reservation.time|time:"H:i" }} PKT &middot; {{ reservation.get_zone_display }} &middot; {{ reservation.guests }} guest{{ reservation.guests|pluralize }}</p>
+  <h2>{{ reservation.get_status_display }}{% if reservation.status == 'approved' %} — Your reservation is confirmed.{% elif reservation.status == 'rejected' %} — We couldn’t confirm this request.{% endif %}</h2>
+  {% if reservation.status == 'pending' %}<p>Your request was received. Your seat is not confirmed yet.</p>
+  {% elif reservation.status == 'approved' %}
+  {% elif reservation.status == 'cancelled' %}<p>Your reservation has been cancelled.</p>
+  {% else %}<p><a href="{% url 'core:booking' %}">Request a different slot</a>.</p>{% endif %}
+  <p>Save this private link to check your booking status. Anyone with the link can view the reservation status, so share it carefully.</p>
+  <p class="status-link"><a href="{% url 'bookings:status' reservation.reference %}">Your private booking status</a></p>
+  <p><a class="button outline" href="{% url 'core:booking' %}">Request another visit</a></p>
+</section>
+{% endblock %}

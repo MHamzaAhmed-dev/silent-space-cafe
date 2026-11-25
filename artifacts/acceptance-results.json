@@ -1,0 +1,27 @@
+{
+  "passed": [
+    "QR export creates a displayed/printable SVG with the correct service-location URL (physical scan not performed)",
+    "Mobile QR URL -> dine-in checkout -> matching receipt/table in staff dashboard -> one New Order email received in the local SMTP test inbox; repeat checkout stays idempotent",
+    "Staff transitions Received -> Preparing -> Completed; original customer receipt reflects Completed",
+    "Disabled QR URL returns the unavailable page, clears the previous location and cannot create an order",
+    "Reservation approval appears in Upcoming; one controlled 60-minute reminder; cancellation preserves reference/time, updates customer status, and frees the full slot for a new approved booking",
+    "Unattended Received order generates one reminder at the controlled 10-minute threshold; Preparing and Completed orders are skipped, including a queued-before-action reminder",
+    "SMTP 451 outage leaves the order saved, retries twice then records Failed; dashboard retry recovers delivery; two overlapping command processes deliver the queued event once",
+    "Authorized staff can act; view-only staff cannot POST order/reservation/retry changes; non-staff login/access and missing-CSRF actions are rejected",
+    "Branded SVG favicon loads on storefront and dashboard; /favicon.ico resolves successfully without a 404; no JavaScript page errors",
+    "Real cafe order, booking, menu and location records unchanged; temporary database/server/inbox cleaned up"
+  ],
+  "unverified": [
+    "Physical QR scanning on a real phone",
+    "External SMTP provider acceptance, actual external inbox delivery and spam placement"
+  ],
+  "test_inbox": "acceptance@silent-space.test",
+  "email_transport": "loopback SMTP capture only",
+  "windows_scheduler": {
+    "status": "unverified",
+    "detail": "Run with --check-windows-scheduler to attempt a temporary scheduled-task probe."
+  },
+  "windows_scheduler_production_account": "unverified: verify task under the deployment service account, including logged-out execution",
+  "run_at": "2026-11-25T19:02:22.350624+05:00",
+  "status": "passed with explicitly listed external verification limits"
+}

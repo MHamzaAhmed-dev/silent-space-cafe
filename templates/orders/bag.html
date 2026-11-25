@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load humanize cafe_images static %}
+{% block title %}Your bag &middot; Silent Space Cafe{% endblock %}
+{% block content %}
+<div class="bag-checkout-page">
+<section class="checkout-heading"><div class="container"><h1>Your bag</h1><a class="text-link" href="{% url 'core:menu' %}">Continue browsing &rarr;</a></div></section>
+<section class="container checkout-content">
+{% if bag.lines %}
+<div class="checkout-layout"><div class="checkout-left"><h2 class="ruled-title">Your items</h2>
+{% for line in bag.lines %}<article class="checkout-item">
+<img src="{{ line.item|menu_photo }}" alt="{{ line.item|menu_photo_alt }}" width="180" height="180">
+<div><h3>{{ line.item.name }}</h3><p>Rs. {{ line.item.price|floatformat:"-2"|intcomma }}</p>
+<div class="checkout-quantity"><div class="quantity-controls" aria-label="Quantity for {{ line.item.name }}">
+<form method="post" action="{% url 'orders:bag_change' line.item.pk 'decrease' %}">{% csrf_token %}<button aria-label="Decrease {{ line.item.name }}">&minus;</button></form><span aria-label="Quantity {{ line.quantity }}">{{ line.quantity }}</span>
+<form method="post" action="{% url 'orders:bag_change' line.item.pk 'increase' %}">{% csrf_token %}<button aria-label="Increase {{ line.item.name }}">+</button></form></div>
+<form method="post" action="{% url 'orders:bag_change' line.item.pk 'remove' %}">{% csrf_token %}<button class="remove-item" aria-label="Remove {{ line.item.name }}">Remove</button></form></div>
+<p class="line-subtotal">Subtotal: Rs. {{ line.subtotal|floatformat:"-2"|intcomma }}</p></div></article>{% endfor %}
+{% if service_location %}<section class="checkout-seat"><h2>Dine-in at {{ service_location.label }}</h2><p>Your scanned seat stays with this order.</p><a class="button" href="{% url 'orders:checkout' %}">Review dine-in order</a></section>
+{% else %}
+<h2 class="ruled-title">Your details</h2>
+<form id="customer-checkout" method="post" action="{% url 'orders:checkout' %}" novalidate>{% csrf_token %}<input type="hidden" name="customer_quote" value="{{ customer_quote }}">
+{{ checkout_form.non_field_errors }}
+<div class="checkout-field"><label for="id_fulfilment">How would you like your order?</label>{{ checkout_form.fulfilment }}{{ checkout_form.fulfilment.errors }}</div>
+{% for field in checkout_form %}{% if field.name != 'fulfilment' and field.name != 'payment_method' %}<div class="checkout-field {% if field.name == 'delivery_area' or field.name == 'street_address' %}delivery-field{% endif %}" {% if selected_kind == "pickup" and field.name == "delivery_area" or selected_kind == "pickup" and field.name == "street_address" %}hidden{% endif %}><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endif %}{% endfor %}
+<button class="text-link" name="action" value="refresh" formnovalidate>Update fees &amp; payment options</button><p class="checkout-help">Pickup is prepared after your order reaches the caf&eacute;. No scheduled pickup time is required.</p>
+</form>{% endif %}</div>
+<aside class="checkout-right"><section class="checkout-summary"><h2>Order summary</h2><dl><div><dt>Subtotal</dt><dd class="bag-total">Rs. {{ bag.total|floatformat:"-2"|intcomma }}</dd></div><div><dt>Delivery</dt><dd id="delivery-fee">{% if service_location %}Rs. 0{% elif needs_area %}Calculated for your area{% else %}Rs. {{ delivery_fee|floatformat:"-2"|intcomma }}{% endif %}</dd></div><div class="summary-total"><dt>Total</dt><dd id="checkout-total">{% if needs_area and not service_location %}Select a delivery area{% else %}Rs. {{ checkout_total|floatformat:"-2"|intcomma }}{% endif %}</dd></div></dl><p class="checkout-help">All prices in PKR. Prices and availability are checked before your order is saved.</p></section>
+{% if not service_location %}<section class="checkout-payments"><h2 class="ruled-title">Payment method</h2>{{ checkout_form.payment_method.errors }}<div id="payment-options">{% for option in checkout_form.payment_method %}<label class="payment-option">{{ option.tag }}<span>{{ option.choice_label }}</span></label>{% empty %}<p>No payment methods available. Choose another fulfilment option or contact the caf&eacute;.</p>{% endfor %}</div><p class="checkout-help">For manual transfers, you will receive your order reference and payment instructions first. The caf&eacute; verifies each transfer.</p></section><button class="button checkout-submit" type="submit" form="customer-checkout">Place order</button>{% endif %}
+</aside></div>
+{% else %}<div class="bag-empty"><h2>A little room for something good</h2><p>Your bag is empty. Find your favourite sip or bite on our menu.</p></div>{% endif %}
+</section></div>
+{{ checkout_data|json_script:"checkout-data" }}
+{% endblock %}

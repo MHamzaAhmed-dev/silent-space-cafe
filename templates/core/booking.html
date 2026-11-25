@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Reserve your quiet moment | Silent Space Caf&eacute;{% endblock %}
+{% block body_class %}booking-page{% endblock %}
+{% block content %}
+<header class="reservation-intro container"><h1>Reserve your quiet moment</h1><p>Choose a space, pick a time, and make room for a little quiet.</p></header>
+<section class="reservation-layout container" id="book-a-table" aria-label="Request a reservation">
+  <div class="reservation-form-column">{% include 'core/partials/booking_form.html' %}</div>
+  <aside class="space-guide" aria-labelledby="space-guide-title">
+    <figure><img src="{% static 'images/editorial/quiet-corner.webp' %}" width="900" height="900" alt="olive armchair beside a reading lamp, book and coffee"></figure>
+    <h2 id="space-guide-title">Choose your space</h2>
+    <ul><li><strong>Quiet Corner</strong><span>Take a break</span></li><li><strong>Reading Zone</strong><span>Read or journal</span></li><li><strong>Solo Space</strong><span>One guest, room to focus</span></li></ul>
+    <p>Available times reflect booking hours and confirmed reservations. Sending a request does not hold a seat.</p>
+  </aside>
+</section>
+<section class="booking-next container" aria-labelledby="booking-next-title"><h2 id="booking-next-title">What happens next</h2><ol>
+  <li><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="m8 26 48-17-17 48-9-22-22-9Z M30 35 56 9"/></svg><h3>Send your request</h3><p>Tell us when you would like to visit. The caf&eacute; reviews each request.</p></li>
+  <li><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="10" y="14" width="44" height="42" rx="2"/><path d="M20 8v13M44 8v13M10 27h44M23 40l7 7 14-14"/></svg><h3>Check your booking status</h3><p>Save your reference and private status link to check the decision.</p></li>
+  <li><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle cx="32" cy="32" r="24"/><path d="M32 17v16l12 8"/></svg><h3>Arrive a few minutes early</h3><p>Once approved, come a little early and settle into your quiet moment.</p></li>
+</ol></section>
+{% endblock %}

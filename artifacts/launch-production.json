@@ -1,0 +1,25 @@
+{
+  "status": "Pass",
+  "debug": false,
+  "server": "WSGI with local host static/media adapter",
+  "checks": [
+    "390px /: collected CSS/JS/photos, layout and HTTP 200",
+    "390px /menu/: collected CSS/JS/photos, layout and HTTP 200",
+    "390px /spaces/: collected CSS/JS/photos, layout and HTTP 200",
+    "390px /book-a-table/: collected CSS/JS/photos, layout and HTTP 200",
+    "390px /orders/bag/: collected CSS/JS/photos, layout and HTTP 200",
+    "768px /: collected CSS/JS/photos, layout and HTTP 200",
+    "768px /menu/: collected CSS/JS/photos, layout and HTTP 200",
+    "768px /spaces/: collected CSS/JS/photos, layout and HTTP 200",
+    "768px /book-a-table/: collected CSS/JS/photos, layout and HTTP 200",
+    "768px /orders/bag/: collected CSS/JS/photos, layout and HTTP 200",
+    "1440px /: collected CSS/JS/photos, layout and HTTP 200",
+    "1440px /menu/: collected CSS/JS/photos, layout and HTTP 200",
+    "1440px /spaces/: collected CSS/JS/photos, layout and HTTP 200",
+    "1440px /book-a-table/: collected CSS/JS/photos, layout and HTTP 200",
+    "1440px /orders/bag/: collected CSS/JS/photos, layout and HTTP 200"
+  ],
+  "uploaded_media": "Pass",
+  "live_database_unchanged": true,
+  "limits": "Host server configuration, real TLS and external storage still require deployment verification."
+}

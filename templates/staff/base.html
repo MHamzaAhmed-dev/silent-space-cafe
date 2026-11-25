@@ -1,0 +1,18 @@
+{% load static tz %}<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>{{ title|default:"Staff sign in" }} | Silent Space Caf&eacute;</title><link rel="icon" href="{% static 'images/favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/staff.css' %}"><script src="{% static 'js/staff.js' %}" defer></script></head>
+<body><a class="skip-link" href="#main">Skip to workspace</a>
+<div class="workspace">
+<aside class="sidebar"><a class="brand" href="{% url 'staff:overview' %}"><span class="brand-mark" aria-hidden="true">ss</span><span>Silent Space<small>CAF&Eacute; &middot; STAFF WORKSPACE</small></span></a>
+{% if user.is_authenticated and user.is_staff %}<nav aria-label="Staff navigation">
+<a href="{% url 'staff:overview' %}" {% if section == 'overview' %}aria-current="page"{% endif %}><span aria-hidden="true">&#x25eb;</span> Overview</a>
+{% if access.orders %}<a href="{% url 'staff:orders' %}" {% if section == 'orders' %}aria-current="page"{% endif %}><span aria-hidden="true">&#x2637;</span> Orders</a>{% endif %}
+{% if access.reservations %}<a href="{% url 'staff:reservations' %}" {% if section == 'reservations' %}aria-current="page"{% endif %}><span aria-hidden="true">&#x25a6;</span> Reservations</a>{% endif %}
+{% if access.menu or access.locations %}<a href="{% url 'staff:catalogue' %}" {% if section == 'catalogue' %}aria-current="page"{% endif %}><span aria-hidden="true">&#x25a4;</span> Menu & QR</a>{% endif %}
+{% if access.notifications %}<a href="{% url 'staff:notifications' %}" {% if section == 'notifications' %}aria-current="page"{% endif %}><span aria-hidden="true">&#x25c7;</span> Notifications</a>{% endif %}
+</nav><div class="sidebar-bottom"><a href="{% url 'admin:index' %}">Django Admin</a><a href="{% url 'core:home' %}">View caf&eacute; website</a><form action="{% url 'staff:logout' %}" method="post">{% csrf_token %}<button class="signout">Sign out</button></form></div>
+{% else %}<p class="sidebar-note">A quieter way to<br>keep the caf&eacute; moving.</p>{% endif %}</aside>
+<div class="main-shell"><header class="topbar"><span>CAF&Eacute; OPERATIONS</span><span>{% now "D, j M Y" %} &middot; PKT{% if user.is_authenticated %} <span class="account">{{ user.get_username }}</span>{% endif %}</span></header>
+<main id="main" tabindex="-1">{% timezone "Asia/Karachi" %}<div class="page-heading"><div><p class="eyebrow">SILENT SPACE CAF&Eacute;</p><h1>{{ title|default:"Welcome back." }}</h1></div>{% block heading_extra %}{% endblock %}</div>
+{% if messages %}<div class="messages" aria-live="polite">{% for message in messages %}<p class="message {{ message.tags }}">{{ message }}</p>{% endfor %}</div>{% endif %}
+{% block content %}{% endblock %}{% endtimezone %}</main><footer class="workspace-footer">Thoughtful service, one moment at a time. <span>All times in Pakistan Standard Time.</span></footer></div></div></body></html>

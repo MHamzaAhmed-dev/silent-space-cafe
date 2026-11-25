@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Our Story &middot; Silent Space Cafe{% endblock %}
+{% block content %}
+<div class="page-intro container"><p class="eyebrow">Silent Space Cafe</p><h1>Our Story</h1></div>
+{% include 'core/partials/story.html' %}
+{% if page != 'booking' %}<section class="page-cta container"><p class="eyebrow">Stay a little longer</p><h2>A quiet moment, made for you.</h2><a class="button" href="{% url 'core:booking' %}">Plan your visit</a><a class="text-link" href="{% url 'core:menu' %}">Explore the menu &rarr;</a></section>{% endif %}
+{% endblock %}

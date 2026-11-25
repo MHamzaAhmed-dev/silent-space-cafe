@@ -1,0 +1,18 @@
+{% load static %}
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-grid">
+    <div class="hero-text">
+      <span class="brass-rule" aria-hidden="true"></span>
+      <h1 id="hero-title">A quiet place<br>to think.</h1>
+      <p class="hero-copy">Coffee, calm, and room to focus.</p>
+      <div class="hero-actions">
+        <a class="button" href="{% url 'core:zones' %}">Explore the spaces</a>
+        <a class="button outline" href="{% url 'core:booking' %}">Reserve a seat</a>
+      </div>
+    </div>
+    <figure class="hero-photo">
+      <img src="{% static 'images/concept-cafe.jpg' %}" width="1600" height="1097" fetchpriority="high" alt="Wooden tables, leafy greenery and comfortable chairs in a naturally lit caf&eacute;">
+      
+    </figure>
+  </div>
+</section>

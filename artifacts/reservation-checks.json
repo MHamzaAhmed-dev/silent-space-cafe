@@ -1,0 +1,11 @@
+{
+  "passed": [
+    "390px: layout order, overflow, keyboard focus, dynamic date/party/zone times, closed-day feedback and past-date rejection passed",
+    "768px: layout order, overflow, keyboard focus, dynamic date/party/zone times, closed-day feedback and past-date rejection passed",
+    "1440px: layout order, overflow, keyboard focus, dynamic date/party/zone times, closed-day feedback and past-date rejection passed",
+    "Valid pending request matches staff/customer reference; duplicate POST queues one notification; approval, Upcoming, full-slot feedback, cancellation, private status and capacity release passed",
+    "No-JavaScript availability/submission with retained details and homepage/menu reservation links passed"
+  ],
+  "data": "isolated; existing records unchanged",
+  "email": "in-memory only"
+}

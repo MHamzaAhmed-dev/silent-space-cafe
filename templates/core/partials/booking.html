@@ -1,0 +1,21 @@
+<section class="reservation" id="book-a-table" aria-labelledby="booking-title">
+  <div class="container">
+    <div class="section-heading"><p class="eyebrow">Reservations</p><h2 id="booking-title">{% if page == 'home' %}Request your seat.{% else %}Make time for quiet.{% endif %}</h2></div>
+    <div class="reservation-grid">
+      <aside class="booking-panel">
+        <h3>Request a seat</h3>
+        <p>Choose your preferred date, time, guest count and zone. Reservations last one hour and begin on the hour in Pakistan Standard Time.</p>
+        <p id="home-booking-note">Requests are saved for review. Submitting one does not confirm a seat.</p>
+        {% if not reservation_form %}<a class="button" href="{% url 'core:booking' %}">Open reservation form</a>{% endif %}
+      </aside>
+      {% if reservation_form %}
+      {% include 'core/partials/booking_form.html' %}
+      {% else %}
+      <div class="booking-form reservation-guide"><div class="full">
+        <h3>Plan your visit</h3>
+        <p>Pick a preferred date and time, tell us how many guests are coming, and choose Quiet Corner, Reading Zone or Solo Space.</p>
+      </div></div>
+      {% endif %}
+    </div>
+  </div>
+</section>

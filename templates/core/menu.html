@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load humanize cafe_images %}
+{% block title %}The menu | Silent Space Caf&eacute;{% endblock %}
+{% block body_class %}menu-page{% endblock %}
+{% block content %}
+<section class="menu-intro container" aria-labelledby="menu-page-title">
+  <span class="brass-rule" aria-hidden="true"></span>
+  <h1 id="menu-page-title">The menu</h1>
+  <p>Coffee, cool sips, and something to bite.</p>
+</section>
+<section class="product-menu container" id="menu" aria-label="Available menu items">
+  {% if service_location %}<p class="service-notice">Dine-in at <strong>{{ service_location.label }}</strong> &middot; Your order will be sent to this location.</p>{% endif %}
+  <div class="menu-grid product-grid">
+    {% for item in catalogue %}
+    <article class="menu-card product-card">
+      <figure class="product-figure">
+        <img class="product-photo" src="{{ item|menu_photo }}" alt="{{ item|menu_photo_alt }}" width="900" height="900" {% if forloop.counter > 3 %}loading="lazy"{% endif %}>
+        {% with photo_label=item|menu_photo_label %}{% if not item.image and photo_label %}<figcaption>{{ photo_label }}</figcaption>{% endif %}{% endwith %}
+      </figure>
+      <div class="product-info">
+        <div class="product-details"><h2>{{ item.name }}</h2><p class="product-price">Rs. {{ item.price|floatformat:"-2"|intcomma }} <span class="sr-only">Pakistani rupees</span></p></div>
+        <form method="post" action="{% url 'orders:bag_change' item.pk 'add' %}">{% csrf_token %}<button class="product-add" type="submit" aria-label="Add {{ item.name }} to bag"><span aria-hidden="true">+</span></button></form>
+      </div>
+      {% if item.description %}<p class="product-description">{{ item.description }}</p>{% endif %}
+    </article>
+    {% empty %}<div class="menu-empty"><h2>A little pause.</h2><p>No menu items are available right now. Please check back soon.</p></div>{% endfor %}
+  </div>
+  <p class="availability" id="ordering-note">All prices in PKR. <a href="{% url 'orders:bag' %}">Open your bag</a></p>
+</section>
+<section class="reservation-banner menu-reservation" aria-labelledby="menu-reservation-title"><div class="container banner-inner"><h2 id="menu-reservation-title">Make time for quiet.</h2><a class="button light" href="{% url 'core:booking' %}">Reserve a seat</a></div></section>
+{% endblock %}

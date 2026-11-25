@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block body_class %}home-page{% endblock %}
+{% block content %}
+{% include 'core/partials/hero.html' %}
+{% include 'core/partials/zones.html' %}
+{% include 'core/partials/story.html' %}
+{% include 'core/partials/menu.html' with catalogue=menu_preview preview=True %}
+<section class="reservation-banner" aria-labelledby="reservation-banner-title">
+  <div class="container banner-inner">
+    <div><h2 id="reservation-banner-title">Make time for quiet.</h2><p>A book, a little focus, a moment to yourself.</p></div>
+    <a class="button light" href="{% url 'core:booking' %}">Reserve a seat</a>
+  </div>
+</section>
+{% include 'core/partials/booking.html' %}
+{% endblock %}

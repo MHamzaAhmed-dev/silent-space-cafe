@@ -1,0 +1,17 @@
+{% load static %}
+<form class="booking-form reservation-request-form" method="post" action="{% url 'core:booking' %}" data-reservation-form data-availability-url="{% url 'bookings:availability' %}" aria-describedby="booking-note availability-message">
+  {% csrf_token %}{{ reservation_form.submission_token }}
+  {% if page == 'booking' %}<h2 class="full" id="booking-title">Request a reservation</h2>{% endif %}
+  {% if reservation_form.errors %}<p class="full booking-alert" role="alert">Check the highlighted fields and try again. Your details have been kept.</p>{% endif %}
+  {{ reservation_form.non_field_errors }}
+  {% for field in reservation_form.visible_fields %}
+  <div class="field {% if field.name == 'special_request' or field.name == 'email' %}full{% endif %}">
+    {{ field.label_tag }}{{ field }}{{ field.errors }}
+    {% if availability_form %}{% if field.name == 'date' %}{{ availability_form.date.errors }}{% elif field.name == 'guests' %}{{ availability_form.guests.errors }}{% elif field.name == 'zone' %}{{ availability_form.zone.errors }}{% endif %}{% endif %}
+    {% if field.name == 'time' %}<p class="availability-message" id="availability-message" role="status" aria-live="polite">{{ reservation_form.availability_message }}</p>{% endif %}
+  </div>
+  {% endfor %}
+  <div class="full check-times"><button class="availability-check" type="submit" name="action" value="check_availability" formnovalidate>Check available times</button><span>One-hour visits &middot; Asia/Karachi (PKT)</span></div>
+  <button class="button full reservation-submit" data-request-submit type="submit" name="action" value="submit">{% if page == 'home' %}Send reservation request{% else %}Request a reservation{% endif %}</button>
+  <p class="full booking-pending" id="booking-note">Your request is pending until approved by the caf&eacute;. Save your private status link after sending.</p>
+</form>

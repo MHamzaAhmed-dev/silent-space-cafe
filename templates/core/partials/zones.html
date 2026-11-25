@@ -1,0 +1,21 @@
+{% load static %}
+<section class="zones" id="quiet-zones" aria-labelledby="zones-title">
+  <div class="container">
+    <div class="section-heading"><span class="brass-rule" aria-hidden="true"></span><h2 id="zones-title">Find your quiet</h2><p>A little room for whatever brings you here.</p></div>
+    <div class="zone-grid">
+      <article class="zone-card">
+        <img src="{% static 'images/editorial/quiet-corner.webp' %}" width="800" height="800" loading="lazy" alt="olive armchair beside a book and reading lamp">
+        <div class="zone-copy"><h3>Quiet Corner</h3><p>Settle in with a coffee, work through your notes or take a break away from conversation.</p><a href="{% url 'core:booking' %}?zone=quiet">Reserve Quiet Corner</a></div>
+      </article>
+      <article class="zone-card">
+        <img src="{% static 'images/editorial/reading-zone.webp' %}" width="800" height="800" loading="lazy" alt="sunlit reading table beside bookshelves">
+        <div class="zone-copy"><h3>Reading Zone</h3><p>Spend time with a book from the mini library or bring a journal and write for a while.</p><a href="{% url 'core:booking' %}?zone=reading">Reserve Reading Zone</a></div>
+      </article>
+      <article class="zone-card">
+        <img src="{% static 'images/editorial/solo-space.webp' %}" width="800" height="800" loading="lazy" alt="wooden study booth with a desk and olive chair">
+        <div class="zone-copy"><h3>Solo Space</h3><p>The private pod concept gives you room to draft, study for an exam or focus on laptop work.</p><a href="{% url 'core:booking' %}?zone=solo">Reserve Solo Space</a></div>
+      </article>
+    </div>
+    
+  </div>
+</section>

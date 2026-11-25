@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Order status | Silent Space{% endblock %}
+{% block content %}
+<section class="payment-receipt container">
+  <h1>{{ order.get_fulfilment_display }} order</h1>
+  <p>Reference: <strong class="workflow-reference">{{ order.reference }}</strong></p>
+  <p>Service location: <strong>{{ order.location_label }}</strong></p>
+  {% if order.fulfilment == 'delivery' %}<p>{{ order.delivery_area_name }} &middot; {{ order.street_address }}</p><p>Delivery fee: Rs. {{ order.delivery_fee|floatformat:"-2"|intcomma }}</p>{% endif %}
+  <section aria-label="Order status"><h2>ORDER</h2><h3>{{ order.get_status_display }}</h3>
+  {% if order.status == 'out_delivery' %}<p>Your order is on its way.</p>
+  {% elif order.status == 'ready_pickup' %}<p>Your order is ready for pickup.</p>
+  {% elif order.status == 'preparing' %}<p>We’re preparing your order.</p>
+  {% elif order.status == 'received' and order.payment_status == 'paid' %}<p>Payment approved. We’ll start preparing your order shortly.</p>{% endif %}</section>
+  <ul>{% for line in order.lines.all %}<li>{{ line.quantity }} &times; {{ line.name }} &middot; Rs. {{ line.subtotal|floatformat:"-2"|intcomma }}</li>{% endfor %}</ul>
+  <p><strong>Total: Rs. {{ order.total|floatformat:"-2"|intcomma }}</strong></p>
+  <p>Payment: {{ order.get_payment_method_display|default:'Arrange with staff' }} &middot; <strong>{{ order.get_payment_status_display }}</strong></p>
+  <section aria-label="Payment status"><h2>PAYMENT</h2>
+  {% if order.payment_status == 'pending' %}<p>Pending verification: We’re checking your transfer.</p>
+  {% elif order.payment_status == 'paid' %}<p>Approved: Payment approved.</p>
+  {% elif order.payment_status == 'rejected' %}<p>Rejected: We couldn’t verify your payment. Please check your transfer details or contact the café.</p>
+  {% else %}<p>{{ order.get_payment_status_display }}</p>{% endif %}</section>
+  {% if order.payment_method == 'jazzcash' or order.payment_method == 'easypaisa' %}
+  <section class="payment-box"><h2>Payment instructions</h2><p>Your order is saved. Transfer exactly <strong>PKR {{ order.total|floatformat:2 }}</strong> to {{ order.get_payment_method_display }}:</p><p><strong>{{ order.payment_receiver }}</strong></p><button class="button" type="button" data-copy-receiver="{{ order.payment_receiver }}">Copy receiver number</button><p>{{ order.payment_instructions|linebreaksbr }}</p>
+  {% if order.payment_status == 'unpaid' %}<form method="post" action="{% url 'orders:transfer_reference' order.reference %}">{% csrf_token %}{{ payment_form.as_p }}<button class="button">Submit transaction reference</button></form><p>Payment stays pending until verified by the caf&eacute;.</p>{% else %}<p>Transaction reference: {{ order.transaction_reference }}</p><p>{{ order.get_payment_status_display }}. Contact the caf&eacute; with your order reference if a correction is needed.</p>{% endif %}</section>
+  {% elif order.payment_method == 'card' and order.payment_status != 'paid' %}<section class="payment-box"><h2>Secure card payment</h2><p>Enter card details only on the payment provider's hosted page. Returning here does not confirm payment.</p><form method="post" action="{% url 'orders:hosted_checkout' order.reference %}">{% csrf_token %}<button class="button">Continue to secure card checkout</button></form></section>{% endif %}
+  <p>Save this page to check your order status.</p>
+</section>
+{% endblock %}
